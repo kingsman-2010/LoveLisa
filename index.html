@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Приглашение для Лизы</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #fce4ec;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            position: relative;
+        }
+        .container {
+            background: white;
+            max-width: 800px;
+            width: 100%;
+            padding: 16px;
+            border-radius: 28px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            position: relative;
+            min-height: 300px;
+        }
+        .page {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            animation: fade 0.3s ease;
+        }
+        .page.active {
+            display: flex;
+        }
+        @keyframes fade {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- ФОТО: адаптивная сетка --- */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            justify-items: center;
+            align-items: center;
+            max-width: 700px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .photo {
+            width: 100%;
+            max-width: 130px;
+            aspect-ratio: 1 / 1;
+        }
+        .photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        /* --- Боковые фото (9 и 10) — теперь не absolute, а в потоке --- */
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .side-photo {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            flex-shrink: 0;
+        }
+
+        /* --- КНОПКИ --- */
+        .big-btn {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            font-size: 20px;
+            border-radius: 60px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #b71c1c;
+            transition: 0.08s ease;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            text-align: center;
+            min-width: 140px;
+            flex-shrink: 0;
+        }
+        .big-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #b71c1c;
+        }
+
+        /* --- Кнопки согласия (2 блок) --- */
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            max-width: 550px;
+            margin: 0 auto;
+            padding: 6px;
+        }
+        .btn-yes {
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.08s;
+            background: #388e3c;
+            box-shadow: 0 4px 0 #1e5a1e;
+            padding: 10px 16px;
+            font-size: 16px;
+            flex: 0 1 auto;
+        }
+        .btn-yes:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #1e5a1e;
+        }
+
+        /* --- Кнопка НЕТ (фиксированная) --- */
+        .btn-no {
+            background: #757575;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            font-size: 15px;
+            border-radius: 40px;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #424242;
+            transition: 0.08s;
+            position: fixed;
+            top: 8px;
+            right: 8px;
+            z-index: 999;
+        }
+        .btn-no:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #424242;
+        }
+
+        /* --- ПОЛЯ ВВОДА --- */
+        input, textarea {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 16px;
+            border-radius: 14px;
+            border: 2px solid #ddd;
+            outline: none;
+            transition: 0.2s;
+        }
+        input:focus, textarea:focus {
+            border-color: #d32f2f;
+        }
+        input[type="datetime-local"] {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 16px;
+            border-radius: 14px;
+            border: 2px solid #ddd;
+            outline: none;
+            transition: 0.2s;
+            font-family: inherit;
+            min-width: 0;
+        }
+        .form-group {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+        }
+        .flex-row .big-btn {
+            min-width: 120px;
+            font-size: 15px;
+            padding: 10px 14px;
+            flex: 0 1 auto;
+        }
+        .flex-row input[type="datetime-local"] {
+            flex: 1;
+            min-width: 160px;
+        }
+        .label-text {
+            font-size: 17px;
+            font-weight: 600;
+            color: #4a148c;
+            white-space: nowrap;
+        }
+
+        /* --- ТАЙМЕР --- */
+        #timer {
+            font-size: 32px;
+            font-weight: bold;
+            color: #d32f2f;
+            background: #fce4ec;
+            padding: 14px 20px;
+            border-radius: 50px;
+            letter-spacing: 2px;
+            font-variant-numeric: tabular-nums;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* --- ВИДЕО --- */
+        .video-container video {
+            width: 100%;
+            max-width: 560px;
+            border-radius: 18px;
+        }
+
+        .small-note {
+            font-size: 13px;
+            color: #888;
+            margin-top: 6px;
+            text-align: center;
+        }
+        .photo-page-img {
+            max-width: 350px;
+            width: 100%;
+            border-radius: 18px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+        /* === АДАПТИВ ДЛЯ МОБИЛЬНЫХ === */
+        @media (max-width: 600px) {
+            .container {
+                padding: 12px;
+                border-radius: 20px;
+            }
+            .photo-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 6px;
+            }
+            .photo {
+                max-width: 70px;
+            }
+            .side-photo {
+                width: 60px;
+                height: 60px;
+            }
+            .button-row {
+                gap: 8px;
+            }
+            .big-btn {
+                font-size: 16px;
+                padding: 12px 16px;
+                min-width: 100px;
+            }
+            .btn-yes {
+                font-size: 13px;
+                padding: 8px 12px;
+            }
+            .flex-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .flex-row .big-btn {
+                min-width: 100%;
+                font-size: 15px;
+            }
+            .flex-row input[type="datetime-local"] {
+                min-width: 100%;
+            }
+            .label-text {
+                font-size: 15px;
+                text-align: center;
+            }
+            #timer {
+                font-size: 22px;
+                padding: 10px 12px;
+                letter-spacing: 1px;
+            }
+            .btn-no {
+                font-size: 13px;
+                padding: 4px 10px;
+                top: 4px;
+                right: 4px;
+            }
+            .photo-page-img {
+                max-width: 280px;
+            }
+            .small-note {
+                font-size: 11px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .photo-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 5px;
+            }
+            .photo {
+                max-width: 80px;
+            }
+            .side-photo {
+                width: 50px;
+                height: 50px;
+            }
+            .big-btn {
+                font-size: 14px;
+                padding: 10px 14px;
+                min-width: 80px;
+            }
+            .btn-yes {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+            #timer {
+                font-size: 18px;
+                padding: 8px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- СТРАНИЦА 1: 8 фото + 2 боковых -->
+    <div id="page1" class="page active">
+        <div class="page1-wrapper">
+            <div class="photo-grid">
+                <div class="photo"><img src="https://pix-up.ru/uploads/img_6a3be4a104b414.47837951_1782310049.jpg"></div>
+                <div class="photo"><img src="https://pix-up.ru/uploads/img_6a3be541df7bb7.25171649_1782310209.jpg"></div>
+                <div class="photo"><img src="https://pix-up.ru/uploads/img_6a3be50e6daaa5.23649535_1782310158.jpg"></div>
+                <div class="photo"><img src="https://pix-up.ru/uploads/img_6a3be529495d00.33286930_1782310185.jpg"></div>
+                <div class="photo"><img src="https://pix-up.ru/uploads/img_6a3be556368567.22209886_1782310230.jpg"></div>
+                <div class="photo"><img src="https://pix-up.ru/uploads/img_6a3be4e45be924.19320373_1782310116.jpg"></div>
+                <div class="photo"><img src="https://pix-up.ru/uploads/img_6a3be4cd92f515.95287450_1782310093.jpg"></div>
+                <div class="photo"><img src="https://pix-up.ru/uploads/img_6a3be4b7e3d443.02016844_1782310071.jpg"></div>
+            </div>
+
+            <div class="button-row">
+                <img class="side-photo" src="https://pix-up.ru/uploads/img_6a3be464b7d6d4.19767997_1782309988.jpg" alt="фото9">
+                <button class="big-btn" onclick="showPage('page2')">Нажми меня, Лиза!</button>
+                <img class="side-photo" src="https://pix-up.ru/uploads/img_6a3be48d225c64.02043794_1782310029.jpg" alt="фото10">
+            </div>
+        </div>
+    </div>
+
+    <!-- СТРАНИЦА 2: 13 кнопок -->
+    <div id="page2" class="page">
+        <h2 style="color:#4a148c; text-align:center; font-size:22px;">Ты пойдёшь со мной погулять?</h2>
+        <div class="btn-group">
+            <button class="btn-yes" style="padding: 12px 28px; font-size: 20px;" onclick="showPage('page3')">Да</button>
+            <button class="btn-yes" style="background:#2e7d32; box-shadow:0 4px 0 #1b5e20; padding: 8px 18px; font-size: 14px;" onclick="showPage('page3')">Определённо</button>
+            <button class="btn-yes" style="background:#00897b; box-shadow:0 4px 0 #00695c; padding: 16px 24px; font-size: 22px;" onclick="showPage('page3')">Естественно</button>
+            <button class="btn-yes" style="background:#5d4037; box-shadow:0 4px 0 #4e342e; padding: 10px 22px; font-size: 16px;" onclick="showPage('page3')">Без вопросов</button>
+            <button class="btn-yes" style="background:#7b1fa2; box-shadow:0 4px 0 #4a148c; padding: 14px 20px; font-size: 24px;" onclick="showPage('page3')">100%</button>
+            <button class="btn-yes" style="background:#c2185b; box-shadow:0 4px 0 #880e4f; padding: 10px 26px; font-size: 18px;" onclick="showPage('page3')">Разумеется</button>
+            <button class="btn-yes" style="background:#1565c0; box-shadow:0 4px 0 #0d47a1; padding: 18px 32px; font-size: 26px;" onclick="showPage('page3')">Безусловно</button>
+            <button class="btn-yes" style="background:#00695c; box-shadow:0 4px 0 #004d40; padding: 12px 24px; font-size: 16px;" onclick="showPage('page3')">Несомненно</button>
+            <button class="btn-yes" style="background:#4e342e; box-shadow:0 4px 0 #3e2723; padding: 16px 18px; font-size: 20px;" onclick="showPage('page3')">Однозначно</button>
+            <button class="btn-yes" style="background:#bf360c; box-shadow:0 4px 0 #8d2e00; padding: 8px 20px; font-size: 14px;" onclick="showPage('page3')">Железобетонно</button>
+            <button class="btn-yes" style="background:#33691e; box-shadow:0 4px 0 #1b5e20; padding: 14px 28px; font-size: 18px;" onclick="showPage('page3')">Конечно!</button>
+            <button class="btn-yes" style="background:#e65100; box-shadow:0 4px 0 #bf360c; padding: 12px 22px; font-size: 16px;" onclick="showPage('page3')">А то как же</button>
+            <button class="btn-yes" style="background:#283593; box-shadow:0 4px 0 #1a237e; padding: 18px 26px; font-size: 24px;" onclick="showPage('page3')">Йес</button>
+        </div>
+    </div>
+
+    <!-- СТРАНИЦА 3: Анкета -->
+    <div id="page3" class="page">
+        <h3 style="color:#4a148c;">❤️ Заполни, пожалуйста ❤️</h3>
+        <div class="form-group">
+            <input type="text" id="food" placeholder="Моя любимая еда🥗">
+            <input type="text" id="love" placeholder="Моё любимое занятие🚶‍➡️">
+            
+            <div class="flex-row">
+                <span class="label-text">Я буду свободна</span>
+                <input type="datetime-local" id="datetime" step="60">
+                <button class="big-btn" style="font-size:14px; padding:10px 14px; background:#6a1b9a; box-shadow:0 4px 0 #4a148c; min-width:100px;" onclick="handleDontKnow()">
+                    😅 Я не знаю
+                </button>
+            </div>
+        </div>
+        <button class="big-btn" style="font-size:17px; padding:12px 28px; margin-top:6px;" onclick="sendAndGo()">Отправить и узнать дату</button>
+        <div class="small-note">* С правильным человеком рядом начинаешь любить себя сильнее)</div>
+    </div>
+
+    <!-- СТРАНИЦА 4: Таймер -->
+    <div id="page4" class="page">
+        <h2 style="color:#4a148c; text-align:center; font-size:20px;">⏳ До встречи осталось:</h2>
+        <div id="timer">-- : -- : -- : --</div>
+        <button class="big-btn" style="font-size:15px; padding:10px 20px; background:#6a1b9a; box-shadow:0 5px 0 #4a148c;" onclick="showPage('page1')">Вернуться к началу</button>
+    </div>
+
+     <!-- СТРАНИЦА 5: Видео -->
+<div id="page5" class="page">
+    <h3 style="color:#880e4f; text-align:center; font-size:18px;">💔 Ну почему... (сделай погромче)</h3>
+    <div class="video-container">
+        <video controls width="100%" style="border-radius:16px;" poster="https://pix-up.ru/uploads/img_6a563f29ada236.57077167_1784037161.jpg">
+            <source src="https://kinescope.io/8Y6Wm9R4wanfs4f9FoeHaK/720p" type="video/mp4">
+            <!-- Запасной вариант: если видео не грузится, показываем ссылку -->
+            <p style="text-align:center; padding:20px; background:#fce4ec; border-radius:16px;">
+                Видео не загрузилось. Попробуйте открыть его по ссылке:<br>
+                <a href="https://kinescope.io/8Y6Wm9R4wanfs4f9FoeHaK/720p" target="_blank" style="color:#d32f2f; font-weight:bold;">Скачать / открыть видео</a>
+            </p>
+        </video>
+    </div>
+    <button class="big-btn" style="font-size:14px; padding:8px 18px; background:#795548; box-shadow:0 4px 0 #4e342e;" onclick="showPage('page1')">Начать заново</button>
+</div>
+
+  <!-- СТРАНИЦА 6: Не знаю -->
+    <div id="page6" class="page">
+        <h2 style="color:#4a148c; text-align:center; font-size:18px;">Тогда напиши мне и мы всё обсудим :)</h2>
+        <div style="max-width: 320px; width:100%; margin:0 auto;">
+            <img src="https://pix-up.ru/uploads/img_6a564105b9f067.50704207_1784037637.jpg" alt="фото" class="photo-page-img">
+        </div>
+        <button class="big-btn" style="font-size:14px; padding:8px 18px; background:#795548; box-shadow:0 4px 0 #4e342e;" onclick="showPage('page1')">Начать заново</button>
+    </div>
+
+</div>
+
+<script>
+    // === Отправка отказа ===
+    function sendNo() {
+        fetch('https://formspree.io/f/mnjeqajq', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message: 'Лиза нажала "Нет(((((("',
+                time: new Date().toLocaleString()
+            })
+        })
+        .then(() => console.log('Отказ отправлен'))
+        .catch(() => console.log('Ошибка отправки отказа'));
+        showPage('page5');
+    }
+
+    function toggleNoButton(show) {
+        const existing = document.querySelector('.btn-no');
+        if (show) {
+            if (!existing) {
+                const btn = document.createElement('button');
+                btn.className = 'btn-no';
+                btn.textContent = 'Нет((((((';
+                btn.onclick = sendNo;
+                document.body.appendChild(btn);
+            }
+        } else {
+            if (existing) existing.remove();
+        }
+    }
+
+    function showPage(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if (id === 'page2') {
+            toggleNoButton(true);
+        } else {
+            toggleNoButton(false);
+        }
+    }
+
+    // === "Я не знаю" ===
+    function handleDontKnow() {
+        const food = document.getElementById('food').value.trim();
+        const love = document.getElementById('love').value.trim();
+
+        if (!food || !love) {
+            alert('Пожалуйста, заполни первые два поля)');
+            return;
+        }
+
+        fetch('https://formspree.io/f/mrewgkyn', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                food: food,
+                love: love,
+                datetime: 'Не знаю когда свободна'
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                showPage('page6');
+            } else {
+                alert('Ошибка отправки. Попробуй ещё раз)');
+            }
+        })
+        .catch(() => alert('Ошибка сети. Проверь интернет)'));
+    }
+
+    // === Парсер даты (оставлен для обратной совместимости) ===
+    function parseDateTime(text) {
+        // ... (полный парсер из предыдущей версии)
+        // Для краткости я оставлю заглушку, но вы можете вставить полную версию
+        return new Date();
+    }
+
+    // === Отправка анкеты ===
+    function sendAndGo() {
+        const food = document.getElementById('food').value.trim();
+        const love = document.getElementById('love').value.trim();
+        const datetimeValue = document.getElementById('datetime').value.trim();
+
+        if (!food || !love || !datetimeValue) {
+            alert('Пожалуйста, заполни все поля)');
+            return;
+        }
+
+        const targetDate = new Date(datetimeValue);
+        if (isNaN(targetDate.getTime())) {
+            alert('Пожалуйста, выбери корректную дату и время)');
+            return;
+        }
+
+        const formattedDate = targetDate.toLocaleString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        fetch('https://formspree.io/f/mrewgkyn', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                food: food,
+                love: love,
+                datetime: formattedDate
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                showPage('page4');
+                startTimer(targetDate);
+            } else {
+                alert('Ошибка отправки. Попробуй ещё раз)');
+            }
+        })
+        .catch(() => alert('Ошибка сети. Проверь интернет)'));
+    }
+
+    // === Таймер ===
+    function startTimer(target) {
+        function update() {
+            const now = new Date();
+            const diff = target - now;
+            if (diff <= 0) {
+                document.getElementById('timer').textContent = '🎉 СЕГОДНЯ! 🎉';
+                return;
+            }
+            const days = Math.floor(diff / (1000*60*60*24));
+            const hrs = Math.floor((diff / (1000*60*60)) % 24);
+            const mins = Math.floor((diff / (1000*60)) % 60);
+            const secs = Math.floor((diff / 1000) % 60);
+            document.getElementById('timer').textContent =
+                `${String(days).padStart(2,'0')} : ${String(hrs).padStart(2,'0')} : ${String(mins).padStart(2,'0')} : ${String(secs).padStart(2,'0')}`;
+        }
+        update();
+        setInterval(update, 1000);
+    }
+</script>
+
+</body>
+</html>
